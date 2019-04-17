@@ -1,0 +1,42 @@
+From e05ec6ed3ecc00258e2ac7a897e640760ecf82c6 Mon Sep 17 00:00:00 2001
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Fri, 4 Jan 2019 16:26:19 +0100
+Subject: [PATCH 22/84] bc: shorten "limits" output
+
+   text	   data	    bss	    dec	    hex	filename
+ 979016	    485	   7296	 986797	  f0ead	busybox_old
+ 978959	    485	   7296	 986740	  f0e74	busybox_unstripped
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ miscutils/bc.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/miscutils/bc.c b/miscutils/bc.c
+index 53e8d7306..74884557a 100644
+--- a/miscutils/bc.c
++++ b/miscutils/bc.c
+@@ -824,10 +824,8 @@ struct globals {
+ #define BC_MAX_STRING   ((unsigned) UINT_MAX - 1)
+ #define BC_MAX_NUM      BC_MAX_STRING
+ // Unused apart from "limits" message. Just show a "biggish number" there.
+-//#define BC_MAX_NAME     BC_MAX_STRING
+ //#define BC_MAX_EXP      ((unsigned long) LONG_MAX)
+ //#define BC_MAX_VARS     ((unsigned long) SIZE_MAX - 1)
+-#define BC_MAX_NAME_STR "999999999"
+ #define BC_MAX_EXP_STR  "999999999"
+ #define BC_MAX_VARS_STR "999999999"
+ 
+@@ -4629,8 +4627,7 @@ static BC_STATUS zbc_parse_stmt_possibly_auto(bool auto_allowed)
+ 			"BC_DIM_MAX      = "BC_MAX_DIM_STR   "\n"
+ 			"BC_SCALE_MAX    = "BC_MAX_SCALE_STR "\n"
+ 			"BC_STRING_MAX   = "BC_MAX_STRING_STR"\n"
+-			"BC_NAME_MAX     = "BC_MAX_NAME_STR  "\n"
+-			"BC_NUM_MAX      = "BC_MAX_NUM_STR   "\n"
++		//	"BC_NUM_MAX      = "BC_MAX_NUM_STR   "\n" - GNU bc does not show this
+ 			"MAX Exponent    = "BC_MAX_EXP_STR   "\n"
+ 			"Number of vars  = "BC_MAX_VARS_STR  "\n"
+ 		);
+-- 
+2.16.2
+

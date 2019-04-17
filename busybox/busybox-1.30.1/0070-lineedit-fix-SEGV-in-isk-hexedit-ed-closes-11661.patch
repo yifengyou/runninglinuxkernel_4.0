@@ -1,0 +1,43 @@
+From 779f96a24c43209be841f9cc0e7715a2c57db487 Mon Sep 17 00:00:00 2001
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Mon, 4 Feb 2019 16:16:30 +0100
+Subject: [PATCH 70/84] lineedit: fix SEGV in isk, hexedit, ed, closes 11661
+
+fdisk, hexedit and ed calls read_line_edit in libbb/lineedit.c with NULL
+as first argument. On line 2373 of lineedit.c of busybox version 1.29.3,
+state->hist_file is referenced without checking the state->flag.
+
+This causes segmentation fault on fdisk, hexedit and ed on ARM Cortex-A9.
+It somehow works on x86_64.
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ libbb/lineedit.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/libbb/lineedit.c b/libbb/lineedit.c
+index 0a888fa70..1d5fef5ee 100644
+--- a/libbb/lineedit.c
++++ b/libbb/lineedit.c
+@@ -2383,13 +2383,14 @@ int FAST_FUNC read_line_input(line_input_t *st, const char *prompt, char *comman
+ 		timeout = st->timeout;
+ 	}
+ #if MAX_HISTORY > 0
++	if (state->flags & DO_HISTORY) {
+ # if ENABLE_FEATURE_EDITING_SAVEHISTORY
+-	if (state->hist_file)
+-		if (state->cnt_history == 0)
+-			load_history(state);
++		if (state->hist_file)
++			if (state->cnt_history == 0)
++				load_history(state);
+ # endif
+-	if (state->flags & DO_HISTORY)
+ 		state->cur_history = state->cnt_history;
++	}
+ #endif
+ 
+ 	/* prepare before init handlers */
+-- 
+2.16.2
+

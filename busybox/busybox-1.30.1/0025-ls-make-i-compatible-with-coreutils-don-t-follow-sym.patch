@@ -1,0 +1,30 @@
+From f83292cfc44da5bd218c2be0602c89afed9e0959 Mon Sep 17 00:00:00 2001
+From: Martijn Dekker <martijn@inlv.org>
+Date: Fri, 4 Jan 2019 18:54:52 +0100
+Subject: [PATCH 25/84] ls: make -i compatible with coreutils: don't follow
+ symlink by default
+
+Signed-off-by: Martijn Dekker <martijn@inlv.org>
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ coreutils/ls.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/coreutils/ls.c b/coreutils/ls.c
+index db3ddb944..b2adb0c06 100644
+--- a/coreutils/ls.c
++++ b/coreutils/ls.c
+@@ -1204,8 +1204,8 @@ int ls_main(int argc UNUSED_PARAM, char **argv)
+ 	nfiles = 0;
+ 	do {
+ 		cur = my_stat(*argv, *argv,
+-			/* follow links on command line unless -l, -s or -F: */
+-			!(option_mask32 & (OPT_l|OPT_s|OPT_F))
++			/* follow links on command line unless -l, -i, -s or -F: */
++			!(option_mask32 & (OPT_l|OPT_i|OPT_s|OPT_F))
+ 			/* ... or if -H: */
+ 			|| (option_mask32 & OPT_H)
+ 			/* ... or if -L, but my_stat always follows links if -L */
+-- 
+2.16.2
+

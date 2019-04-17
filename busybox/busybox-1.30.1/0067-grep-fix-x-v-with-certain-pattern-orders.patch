@@ -1,0 +1,66 @@
+From 9a9c6e39ba4c8f4f2cecb147c7e6464bec2d8b55 Mon Sep 17 00:00:00 2001
+From: Ari Sundholm <ari@tuxera.com>
+Date: Tue, 29 Jan 2019 14:42:57 +0100
+Subject: [PATCH 67/84] grep: fix -x -v with certain pattern orders
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+We found out that busybox -x -v is a bit broken:
+
+ari@ari-thinkpad:~/busybox$ echo '  aa bb cc' | ./busybox grep -x -e 'aa.*' -e '.*bb.*'
+  aa bb cc
+ari@ari-thinkpad:~/busybox$ echo '  aa bb cc' | ./busybox grep -x -v -e 'aa.*' -e '.*bb.*'
+ari@ari-thinkpad:~/busybox$ echo '  aa bb cc' | ./busybox grep -x -e '.*aa.*' -e 'bb.*'
+  aa bb cc
+ari@ari-thinkpad:~/busybox$ echo '  aa bb cc' | ./busybox grep -x -v -e '.*aa.*' -e 'bb.*'
+  aa bb cc
+
+Last one is wrong.
+
+This patch fixes the issue by making sure that the variable 'found'
+never makes a transition from 1 to 0, as this would mean that
+grep previously found a match on this input line.
+
+Signed-off-by: Ari Sundholm <ari@tuxera.com>
+Signed-off-by: Niko Vähäsarja <niko@tuxera.com>
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ findutils/grep.c     | 2 +-
+ testsuite/grep.tests | 7 +++++++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/findutils/grep.c b/findutils/grep.c
+index a4033a40b..9d9da422c 100644
+--- a/findutils/grep.c
++++ b/findutils/grep.c
+@@ -404,7 +404,7 @@ static int grep_file(FILE *file)
+ #endif
+ 				) {
+ 					if (option_mask32 & OPT_x) {
+-						found = (gl->matched_range.rm_so == 0
++						found |= (gl->matched_range.rm_so == 0
+ 						         && match_at[gl->matched_range.rm_eo] == '\0');
+ 					} else
+ 					if (!(option_mask32 & OPT_w)) {
+diff --git a/testsuite/grep.tests b/testsuite/grep.tests
+index e57889790..26f8e69cf 100755
+--- a/testsuite/grep.tests
++++ b/testsuite/grep.tests
+@@ -177,6 +177,13 @@ testing "grep -w word match second word" \
+ 	"bword,word\n""wordb,word\n""bwordb,word\n" \
+ 	""
+ 
++
++testing "grep -x -v -e EXP1 -e EXP2 finds nothing if either EXP matches" \
++	"grep -x -v -e '.*aa.*' -e 'bb.*'; echo \$?" \
++	"1\n" \
++	"" \
++	"  aa bb cc\n"
++
+ # -r on symlink to dir should recurse into dir
+ mkdir -p grep.testdir/foo
+ echo bar > grep.testdir/foo/file
+-- 
+2.16.2
+

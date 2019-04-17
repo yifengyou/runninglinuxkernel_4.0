@@ -1,0 +1,45 @@
+From f11b5b9864d6bf1b49aa16f45b855e86efbb60a5 Mon Sep 17 00:00:00 2001
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Fri, 4 Jan 2019 15:54:40 +0100
+Subject: [PATCH 21/84] bc: formatting changes, added a FIXME comment, no logic
+ changes
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ miscutils/bc.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/miscutils/bc.c b/miscutils/bc.c
+index 69d3920c0..53e8d7306 100644
+--- a/miscutils/bc.c
++++ b/miscutils/bc.c
+@@ -643,11 +643,13 @@ dc_char_to_LEX[] ALIGN1 = {
+ 	// IJKLMNOP
+ 	DC_LEX_IBASE, XC_LEX_INVALID, DC_LEX_SCALE, DC_LEX_LOAD_POP,
+ 	XC_LEX_INVALID, DC_LEX_OP_BOOL_NOT, DC_LEX_OBASE, DC_LEX_PRINT_STREAM,
+-	// QRSTUVWXY
+-	DC_LEX_NQUIT, DC_LEX_POP, DC_LEX_STORE_PUSH, XC_LEX_INVALID, XC_LEX_INVALID,
+-	XC_LEX_INVALID, XC_LEX_INVALID, DC_LEX_SCALE_FACTOR, XC_LEX_INVALID,
+-	// Z[\]
+-	DC_LEX_LENGTH, XC_LEX_INVALID, XC_LEX_INVALID, XC_LEX_INVALID,
++	// QRSTUVWX
++	DC_LEX_NQUIT, DC_LEX_POP, DC_LEX_STORE_PUSH, XC_LEX_INVALID,
++	XC_LEX_INVALID, XC_LEX_INVALID, XC_LEX_INVALID, DC_LEX_SCALE_FACTOR,
++	// YZ
++	XC_LEX_INVALID, DC_LEX_LENGTH,
++	// [\]
++	XC_LEX_INVALID, XC_LEX_INVALID, XC_LEX_INVALID,
+ 	// ^_`
+ 	XC_LEX_OP_POWER, XC_LEX_NEG, XC_LEX_INVALID,
+ 	// abcdefgh
+@@ -4574,6 +4576,7 @@ static BC_STATUS zbc_parse_stmt_possibly_auto(bool auto_allowed)
+ 		}
+ 		while (p->lex != BC_LEX_RBRACE) {
+ 			dbg_lex("%s:%d block parsing loop", __func__, __LINE__);
++//FIXME: prevent wrong syntax such as "{ print 1 print 2 }"
+ 			s = zbc_parse_stmt();
+ 			if (s) RETURN_STATUS(s);
+ 		}
+-- 
+2.16.2
+

@@ -1,0 +1,46 @@
+From 51b510a480b99d480bcf6919b8bae16eb1c61718 Mon Sep 17 00:00:00 2001
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Tue, 1 Jan 2019 02:19:02 +0100
+Subject: [PATCH 07/84] bc: in xc_read_line(), check ^C on NUL input bytes too
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ miscutils/bc.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/miscutils/bc.c b/miscutils/bc.c
+index febf51cfd..23b3521d4 100644
+--- a/miscutils/bc.c
++++ b/miscutils/bc.c
+@@ -2509,7 +2509,7 @@ static void xc_read_line(BcVec *vec, FILE *fp)
+ 		i = 0;
+ 		for (;;) {
+ 			char c = line_buf[i++];
+-			if (!c) break;
++			if (c == '\0') break;
+ 			if (bad_input_byte(c)) goto again;
+ 		}
+ 		bc_vec_string(vec, n, line_buf);
+@@ -2522,14 +2522,16 @@ static void xc_read_line(BcVec *vec, FILE *fp)
+ 		bool bad_chars = 0;
+ 
+ 		do {
++ get_char:
+ #if ENABLE_FEATURE_BC_INTERACTIVE
+ 			if (G_interrupt) {
+ 				// ^C was pressed: ignore entire line, get another one
+-				bc_vec_pop_all(vec);
+-				goto intr;
++				goto again;
+ 			}
+ #endif
+-			do c = fgetc(fp); while (c == '\0');
++			c = fgetc(fp);
++			if (c == '\0')
++				goto get_char;
+ 			if (c == EOF) {
+ 				if (ferror(fp))
+ 					bb_perror_msg_and_die("input error");
+-- 
+2.16.2
+

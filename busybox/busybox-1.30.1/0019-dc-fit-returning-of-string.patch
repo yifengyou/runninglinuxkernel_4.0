@@ -1,0 +1,77 @@
+From 1db367a8e65a74277360a89885ff7d377b5feb8b Mon Sep 17 00:00:00 2001
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Fri, 4 Jan 2019 06:18:00 +0100
+Subject: [PATCH 19/84] dc: fit returning of string
+
+function                                             old     new   delta
+zxc_program_exec                                    4087    4098     +11
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ miscutils/bc.c     | 18 +++++++++++++-----
+ testsuite/dc.tests |  5 +++++
+ 2 files changed, 18 insertions(+), 5 deletions(-)
+
+diff --git a/miscutils/bc.c b/miscutils/bc.c
+index 1e8056c01..e497b0d02 100644
+--- a/miscutils/bc.c
++++ b/miscutils/bc.c
+@@ -6020,6 +6020,9 @@ static BC_STATUS zbc_program_return(char inst)
+ 	BcInstPtr *ip = bc_vec_top(&G.prog.exestack);
+ 
+ 	if (inst == XC_INST_RET) {
++		// bc needs this for e.g. RESULT_CONSTANT ("return 5")
++		// because bc constants are per-function.
++		// TODO: maybe avoid if value is already RESULT_TEMP?
+ 		BcStatus s;
+ 		BcNum *num;
+ 		BcResult *operand = bc_vec_top(&G.prog.results);
+@@ -6458,7 +6461,17 @@ static BC_STATUS zxc_program_exec(void)
+ 
+ 		dbg_exec("inst at %zd:%d results.len:%d", ip->inst_idx - 1, inst, G.prog.results.len);
+ 		switch (inst) {
++		case XC_INST_RET:
++			if (IS_DC) { // end of '?' reached
++				bc_vec_pop(&G.prog.exestack);
++				goto read_updated_ip;
++			}
++			// bc: fall through
+ #if ENABLE_BC
++		case BC_INST_RET0:
++			dbg_exec("BC_INST_RET[0]:");
++			s = zbc_program_return(inst);
++			goto read_updated_ip;
+ 		case BC_INST_JUMP_ZERO: {
+ 			BcNum *num;
+ 			bool zero;
+@@ -6495,11 +6508,6 @@ static BC_STATUS zxc_program_exec(void)
+ 			dbg_exec("BC_INST_HALT:");
+ 			QUIT_OR_RETURN_TO_MAIN;
+ 			break;
+-		case XC_INST_RET:
+-		case BC_INST_RET0:
+-			dbg_exec("BC_INST_RET[0]:");
+-			s = zbc_program_return(inst);
+-			goto read_updated_ip;
+ 		case XC_INST_BOOL_OR:
+ 		case XC_INST_BOOL_AND:
+ #endif // ENABLE_BC
+diff --git a/testsuite/dc.tests b/testsuite/dc.tests
+index 87b1e71c3..1708a4835 100755
+--- a/testsuite/dc.tests
++++ b/testsuite/dc.tests
+@@ -46,6 +46,11 @@ testing "dc read" \
+ 	"2\n9\n1\n" \
+ 	"1?2\nf" "9\n"
+ 
++testing "dc read string" \
++	"dc -finput" \
++	"2\nstr\n1\n" \
++	"1?2\nf" "[str]\n"
++
+ optional FEATURE_DC_BIG
+ # All tests below depend on FEATURE_DC_BIG
+ 
+-- 
+2.16.2
+

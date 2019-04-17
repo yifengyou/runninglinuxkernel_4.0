@@ -1,0 +1,27 @@
+From e6503f2f0982378cd753be152fa19f8336c357bc Mon Sep 17 00:00:00 2001
+From: Rostislav Skudnov <rostislav@tuxera.com>
+Date: Wed, 6 Feb 2019 11:57:29 +0000
+Subject: [PATCH 73/84] chcon: Fix typo in ACTION_RECURSE
+
+Signed-off-by: Rostislav Skudnov <rostislav@tuxera.com>
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ selinux/chcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/selinux/chcon.c b/selinux/chcon.c
+index 92eb76737..5bf91710c 100644
+--- a/selinux/chcon.c
++++ b/selinux/chcon.c
+@@ -204,7 +204,7 @@ int chcon_main(int argc UNUSED_PARAM, char **argv)
+ 		fname[fname_len] = '\0';
+ 
+ 		if (recursive_action(fname,
+-					((option_mask32 & OPT_RECURSIVE) ? ACTION_RECURSIVE : 0),
++					((option_mask32 & OPT_RECURSIVE) ? ACTION_RECURSE : 0),
+ 					change_filedir_context,
+ 					change_filedir_context,
+ 					NULL, 0) != TRUE)
+-- 
+2.16.2
+

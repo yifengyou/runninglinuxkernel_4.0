@@ -1,0 +1,32 @@
+From b7928e18b14a2bc2aa27f82b80803fdff68c328a Mon Sep 17 00:00:00 2001
+From: Brian Foley <bpfoley@google.com>
+Date: Wed, 2 Jan 2019 13:09:45 -0800
+Subject: [PATCH 60/84] sed: Fix backslash parsing for 'w' command arg
+
+If there's any whitespace between w and the filename, parse_file_cmd
+writes to the wrong offset when trying to fix up backslashes.
+
+This can be seen in the asan build with busybox sed -e 'w 0\\'
+
+Signed-off-by: Brian Foley <bpfoley@google.com>
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ editors/sed.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/editors/sed.c b/editors/sed.c
+index 1054c1302..cddb0c732 100644
+--- a/editors/sed.c
++++ b/editors/sed.c
+@@ -387,7 +387,7 @@ static int parse_file_cmd(/*sed_cmd_t *sed_cmd,*/ const char *filecmdstr, char *
+ 		bb_error_msg_and_die("empty filename");
+ 	*retval = xstrndup(filecmdstr+start, idx-start+hack+1);
+ 	if (hack)
+-		(*retval)[idx] = '\\';
++		(*retval)[idx-start] = '\\';
+ 
+ 	return idx;
+ }
+-- 
+2.16.2
+

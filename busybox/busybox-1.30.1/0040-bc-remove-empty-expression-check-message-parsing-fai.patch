@@ -1,0 +1,35 @@
+From a1698a15dc93e429732d513ecfa3f1be723b51c5 Mon Sep 17 00:00:00 2001
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Tue, 8 Jan 2019 19:32:38 +0100
+Subject: [PATCH 40/84] bc: remove "empty expression" check/message, parsing
+ fails in these cases anyway
+
+function                                             old     new   delta
+zbc_parse_expr                                      1848    1818     -30
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ miscutils/bc.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/miscutils/bc.c b/miscutils/bc.c
+index cf0fdd6d8..a34312851 100644
+--- a/miscutils/bc.c
++++ b/miscutils/bc.c
+@@ -4780,9 +4780,10 @@ static BC_STATUS zbc_parse_expr(uint8_t flags)
+ 			break;
+ 		case BC_LEX_RPAREN:
+ 			dbg_lex("%s:%d LEX_RPAREN", __func__, __LINE__);
+-			if (p->lex_last == BC_LEX_LPAREN) {
+-				RETURN_STATUS(bc_error("empty expression"));
+-			}
++//why?
++//			if (p->lex_last == BC_LEX_LPAREN) {
++//				RETURN_STATUS(bc_error_at("empty expression"));
++//			}
+ 			if (bin_last || prev == XC_INST_BOOL_NOT)
+ 				RETURN_STATUS(bc_error_bad_expression());
+ 			if (nparens == 0) {
+-- 
+2.16.2
+

@@ -1,0 +1,31 @@
+From f50faf84081caa3ce325d2ec69f9dda2520174d9 Mon Sep 17 00:00:00 2001
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Tue, 22 Jan 2019 10:07:50 +0100
+Subject: [PATCH 63/84] ip link: fix mismatched enums in vlan_parse_opt(),
+ closes 11631
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ networking/libiproute/iplink.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/networking/libiproute/iplink.c b/networking/libiproute/iplink.c
+index 9c164a71d..883a1f14a 100644
+--- a/networking/libiproute/iplink.c
++++ b/networking/libiproute/iplink.c
+@@ -490,11 +490,11 @@ static void vlan_parse_opt(char **argv, struct nlmsghdr *n, unsigned int size)
+ 	;
+ 	enum {
+ 		ARG_id = 0,
++		ARG_protocol,
+ 		ARG_reorder_hdr,
+ 		ARG_gvrp,
+ 		ARG_mvrp,
+ 		ARG_loose_binding,
+-		ARG_protocol,
+ 	};
+ 	enum {
+ 		PROTO_8021Q = 0,
+-- 
+2.16.2
+

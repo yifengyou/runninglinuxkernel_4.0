@@ -1,0 +1,74 @@
+From 6842c6062a201cc34a262b4c450cf8e1374e9e3a Mon Sep 17 00:00:00 2001
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Fri, 4 Jan 2019 05:41:47 +0100
+Subject: [PATCH 18/84] dc: fix '?'
+
+function                                             old     new   delta
+zdc_parse_expr                                       470     479      +9
+zxc_vm_process                                       839     814     -25
+------------------------------------------------------------------------------
+(add/remove: 0/0 grow/shrink: 1/1 up/down: 9/-25)             Total: -16 bytes
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ miscutils/bc.c     | 13 ++++---------
+ testsuite/dc.tests |  5 +++++
+ 2 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/miscutils/bc.c b/miscutils/bc.c
+index ec3560c2b..1e8056c01 100644
+--- a/miscutils/bc.c
++++ b/miscutils/bc.c
+@@ -5054,6 +5054,9 @@ static BC_STATUS zdc_parse_expr(void)
+ 	BcParse *p = &G.prs;
+ 	int i;
+ 
++	if (p->lex == XC_LEX_NLINE)
++		RETURN_STATUS(zxc_lex_next());
++
+ 	i = (int)p->lex - (int)XC_LEX_OP_POWER;
+ 	if (i >= 0) {
+ 		BcInst inst = dc_LEX_to_INST[i];
+@@ -6766,14 +6769,6 @@ static BC_STATUS zxc_vm_process(const char *text)
+ #endif
+ 		} else {
+ #if ENABLE_DC
+-			// Most of dc parsing assumes all whitespace,
+-			// including '\n', is eaten.
+-			while (G.prs.lex == XC_LEX_NLINE) {
+-				s = zxc_lex_next();
+-				if (s) goto err;
+-				if (G.prs.lex == XC_LEX_EOF)
+-					goto done;
+-			}
+ 			s = zdc_parse_expr();
+ #endif
+ 		}
+@@ -6836,7 +6831,7 @@ static BC_STATUS zxc_vm_process(const char *text)
+ 		bc_vec_pop_all(&f->code);
+ 		ip->inst_idx = 0;
+ 	}
+- IF_DC(done:)
++
+ 	dbg_lex_done("%s:%d done", __func__, __LINE__);
+ 	RETURN_STATUS(s);
+ }
+diff --git a/testsuite/dc.tests b/testsuite/dc.tests
+index 29b413cad..87b1e71c3 100755
+--- a/testsuite/dc.tests
++++ b/testsuite/dc.tests
+@@ -41,6 +41,11 @@ testing "dc complex without spaces (multiple args)" \
+ 	"16\n" \
+ 	"" ""
+ 
++testing "dc read" \
++	"dc -finput" \
++	"2\n9\n1\n" \
++	"1?2\nf" "9\n"
++
+ optional FEATURE_DC_BIG
+ # All tests below depend on FEATURE_DC_BIG
+ 
+-- 
+2.16.2
+

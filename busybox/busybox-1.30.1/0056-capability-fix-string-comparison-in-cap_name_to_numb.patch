@@ -1,0 +1,30 @@
+From 11cb9eeffec0e2575c8722e83de3116f81b61b4f Mon Sep 17 00:00:00 2001
+From: Mark Marshall <mark.marshall@omicronenergy.com>
+Date: Fri, 18 Jan 2019 09:10:34 +0100
+Subject: [PATCH 56/84] capability: fix string comparison in cap_name_to_number
+
+The result of strcasecmp was being used incorrectly.  This function
+returns 0 if the strings match.
+
+Signed-off-by: Mark Marshall <mark.marshall@omicronenergy.com>
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ libbb/capability.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libbb/capability.c b/libbb/capability.c
+index 6587dcbf7..d0ae78b91 100644
+--- a/libbb/capability.c
++++ b/libbb/capability.c
+@@ -67,7 +67,7 @@ unsigned FAST_FUNC cap_name_to_number(const char *cap)
+ 		goto found;
+ 	}
+ 	for (i = 0; i < ARRAY_SIZE(capabilities); i++) {
+-		if (strcasecmp(capabilities[i], cap) != 0)
++		if (strcasecmp(capabilities[i], cap) == 0)
+ 			goto found;
+ 	}
+ 	bb_error_msg_and_die("unknown capability '%s'", cap);
+-- 
+2.16.2
+
